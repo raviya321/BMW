@@ -1,37 +1,80 @@
-import Jimp from 'jimp';
-import jsQR from 'jsqr';
-import jpeg from 'jpeg-js';
+import fs from 'fs/promises';
 import config from '../../config.cjs';
 
-const readqr = async (m, gss) => {
-  try {
-    const prefix = config.PREFIX;
-const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-const text = m.body.slice(prefix.length + cmd.length).trim();
-    
-    const validCommands = ['readqr'];
+const stickerCommand = async (m, gss) => {
+  const prefix = config.PREFIX;
+  const [cmd, arg] = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ') : ['', ''];
 
-    if (!validCommands.includes(cmd)) return;
+  const packname = global.packname || "BMW-MD";
+  const author = global.author || "🥵💫👿";
 
-    if (!m.quoted || m.quoted.mtype !== 'imageMessage') {
-      return m.reply('Please quote an image containing a QR code with a caption.');
+  const validCommands = ['sticker', 's', 'autosticker', 'dexter'];
+
+  // Handle autosticker command
+  if (cmd === 'autosticker') {
+    if (arg === 'on') {
+      config.AUTO_STICKER = true;
+      await m.reply('Auto-sticker is now enabled.');
+    } else if (arg === 'off') {
+      config.AUTO_STICKER = false;
+      await m.reply('Auto-sticker is now disabled.');
+    } else {
+      await m.reply('Usage: /autosticker on|off');
+    }
+    return;
+  }
+
+  // Handle dexter command to send a message to all group members
+  if (cmd === 'dexter') {
+    if (m.isGroup) {
+      const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
+      const members = groupMetadata.participants; // List of group members
+
+      // Send message to each member
+      for (const member of members) {
+        await gss.sendMessage(member.id, { text: 'Hello! This is a message from Dexter.' });
+      }
+      await m.reply('Message sent to all group members.');
+    } else {
+      await m.reply('This command can only be used in a group.');
+    }
+    return;
+  }
+
+  // Auto sticker functionality using config
+  if (config.AUTO_STICKER && !m.key.fromMe) {
+    if (m.type === 'imageMessage') {
+      let mediac = await m.download();
+      await gss.sendImageAsSticker(m.from, mediac, m, { packname, author });
+      console.log(`Auto sticker detected`);
+      return;
+    } else if (m.type === 'videoMessage' && m.msg.seconds <= 11) {
+      let mediac = await m.download();
+      await gss.sendVideoAsSticker(m.from, mediac, m, { packname, author });
+      return;
+    }
+  }
+
+  if (validCommands.includes(cmd)) {
+    const quoted = m.quoted || {};
+
+    if (!quoted || (quoted.mtype !== 'imageMessage' && quoted.mtype !== 'videoMessage')) {
+      return m.reply(`Send/Reply with an image or video to convert into a sticker ${prefix + cmd}`);
     }
 
-    const buffer = await m.quoted.download();
-    const image = await Jimp.read(buffer);
-    const { data, width, height } = image.bitmap;
-    
-    const code = jsQR(data, width, height);
+    const media = await quoted.download();
+    if (!media) throw new Error('Failed to download media.');
 
-    if (!code) {
-      return m.reply('QR code not found or could not be decoded.');
+    const filePath = `./${Date.now()}.${quoted.mtype === 'imageMessage' ? 'png' : 'mp4'}`;
+    await fs.writeFile(filePath, media);
+
+    if (quoted.mtype === 'imageMessage') {
+      const stickerBuffer = await fs.readFile(filePath);
+      await gss.sendImageAsSticker(m.from, stickerBuffer, m, { packname, author });
+    } else if (quoted.mtype === 'videoMessage') {
+      await gss.sendVideoAsSticker(m.from, filePath, m, { packname, author });
     }
-
-    m.reply(`Decoded QR code: ${code.data}`);
-  } catch (error) {
-    console.error('Error:', error);
-    m.reply('An error occurred while processing the command.');
   }
 };
 
-export default readqr;
+export default stickerCommand;
