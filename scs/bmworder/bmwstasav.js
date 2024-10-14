@@ -25,7 +25,7 @@ const handleGreeting = async (m, gss) => {
             mediaTasks.push(imageUrl.then(url =>
               gss.sendMessage(m.from, {
                 image: { url: url },
-                caption: `${imageCaption}\\n\n *`ᴅᴇxᴛᴇʀ ᴘʀᴏɢʀᴀᴍᴇʀ`*`,
+                caption: `${imageCaption}\\n\n *ᴅᴇxᴛᴇʀ ᴘʀᴏɢʀᴀᴍᴇʀ*`,
                 contextInfo: {
                   mentionedJid: [m.sender], // Mention sender
                   isForwarded: false, // Mark as not forwarded
@@ -41,7 +41,7 @@ const handleGreeting = async (m, gss) => {
             mediaTasks.push(videoUrl.then(url =>
               gss.sendMessage(m.from, {
                 video: { url: url },
-                caption: `${videoCaption}\n\n *`ᴅᴇxᴛᴇʀ ᴘʀᴏɢʀᴀᴍᴇʀ`* `,
+                caption: `${videoCaption}\n\n *ᴅᴇxᴛᴇʀ ᴘʀᴏɢʀᴀᴍᴇʀ* `,
                 contextInfo: {
                   mentionedJid: [m.sender], // Mention sender
                   isForwarded: false, // Mark as not forwarded
