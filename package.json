@@ -31,7 +31,6 @@
     "ffmpeg": "^0.0.4",
     "file-type": "^19.0.0",
     "fluent-ffmpeg": "^2.1.3",
-    "fs": "^0.0.1-security",
     "fs/promises": "^0.0.1-security",
     "google-it": "^1.6.4",
     "human-readable": "^0.2.1",
