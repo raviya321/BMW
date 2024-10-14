@@ -1,12 +1,12 @@
 import fs from 'fs';
-import config from '../../config.js';
+import config from '../../config.cjs';
 
 const handleGreeting = async (m, gss) => {
   try {
     const textLower = m.body.toLowerCase();
 
     const triggerWords = [
-      'send', 'statusdown', 'take', 'sent', 'giv', 'gib', 'upload',
+      'send', 'oni', 'dpn', 'එවන්න', 'one', 'dapan', 'upload',
       'send me', 'sent me', 'znt', 'snt', 'ayak', 'do', 'mee'
     ];
 
@@ -23,9 +23,8 @@ const handleGreeting = async (m, gss) => {
               image: { url: imageUrl },
               caption: imageCaption,
               contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 9999,
-                isForwarded: true,
+                mentionedJid: [m.sender], // Mention sender if needed
+                isForwarded: false, // Mark as not forwarded
               },
             });
           }
@@ -38,9 +37,8 @@ const handleGreeting = async (m, gss) => {
               video: { url: videoUrl },
               caption: videoCaption,
               contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 9999,
-                isForwarded: true,
+                mentionedJid: [m.sender], // Mention sender if needed
+                isForwarded: false, // Mark as not forwarded
               },
             });
           }
