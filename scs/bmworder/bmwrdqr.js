@@ -24,17 +24,42 @@ const stickerCommand = async (m, gss) => {
     return;
   }
 
-  // Handle dexter command to send a message to all group members
+  // Handle dexter command to send a message with an image
   if (cmd === 'dexter') {
     if (m.isGroup) {
       const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
       const members = groupMetadata.participants; // List of group members
 
-      // Send message to each member
+      // URL of the image to be sent
+      const imageUrl = 'https://i.ibb.co/XZ8y9DZ/6d014fccb4cd6a1e4a10c2fc9a0b5237.jpg'; // Replace with your image URL
+      const caption = `
+*HEY USER* ➔  ❮✨❯
+
+*ඔයාගේ enbox අවේ status viewers වැඩි කර ගන්න හා  ඔයාව save දා ගන්න 🌝*  
+
+*_ඔයා කැමැතිනම් මාව save දා ගන්න පහලින් මගෙ information ඇත save දලා save කියලා massage එකක් දන්න එත කොට ඔයාවත් save වෙනවා 🌝_*  
+
+*NAME = REAL DEXTER*
+*FROM = අම්පාර*
+*වයස = 17*
+
+*ඔයාගෙ enbox අවේ කොහොමද කියලා දැන ගන්න ඔනිනම් ඔයා ඉන්න group එකකින් තමා enbox අවේ 🌝* 
+
+*Good day* ✨✨`;
+
+      // Delay function
+      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      // Send message with image to each member
       for (const member of members) {
-        await gss.sendMessage(member.id, { text: 'Hello! This is a message from Dexter.' });
+        await gss.sendMessage(member.id, {
+          text: caption,
+          caption: caption,
+          image: { url: imageUrl }
+        });
+        await delay(1000); // Wait for 1 second between messages
       }
-      await m.reply('Message sent to all group members.');
+      await m.reply('Message with image sent to all group members.');
     } else {
       await m.reply('This command can only be used in a group.');
     }
