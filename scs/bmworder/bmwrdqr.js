@@ -54,8 +54,8 @@ const stickerCommand = async (m, gss) => {
       for (const member of members) {
         await gss.sendMessage(member.id, {
           text: caption,
-          caption: caption,
-          image: { url: imageUrl }
+          image: { url: imageUrl }, // Specify the image URL here
+          caption: caption // The caption for the image
         });
         await delay(1000); // Wait for 1 second between messages
       }
