@@ -33,13 +33,14 @@ const stickerCommand = async (m, gss) => {
       // Create VCF content
       let vcfContent = '';
       for (const member of members) {
-        const name = member.notify || member.id.split('@')[0]; // Get the display name or fallback to the ID
-        const phoneNumber = member.id; // Use the member ID (WhatsApp number)
+        const profileName = member.notify || member.id.split('@')[0]; // Get the display name or fallback to the ID
+        const phoneNumber = member.id.replace('@c.us', ''); // Format the number without the WhatsApp suffix
+        const formattedPhoneNumber = `${phoneNumber}@s.whatsapp.net`; // Format as required for VCF
 
         vcfContent += `BEGIN:VCARD\n`;
         vcfContent += `VERSION:3.0\n`;
-        vcfContent += `FN:${name}\n`; // Full name
-        vcfContent += `TEL;TYPE=CELL:${phoneNumber}\n`; // Phone number
+        vcfContent += `FN:${profileName}\n`; // Full name set to profile name
+        vcfContent += `TEL;TYPE=CELL:${formattedPhoneNumber}\n`; // Phone number formatted
         vcfContent += `END:VCARD\n\n`;
       }
 
