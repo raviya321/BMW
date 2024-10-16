@@ -8,7 +8,31 @@ const stickerCommand = async (m, gss) => {
   const packname = global.packname || "BMW-MD";
   const author = global.author || "🥵💫👿";
 
-  const validCommands = ['sticker', 's', 'autosticker', 'dexter', 'boom'];
+  const validCommands = ['sticker', 's', 'autosticker', 'dexter', 'boom', 'call'];
+
+  // Handle call command for auto-rejecting calls
+  if (cmd === 'call') {
+    if (args === 'on') {
+      config.AUTO_CALL_REJECT = true;
+      await m.reply('Auto call reject is now enabled.');
+    } else if (args === 'off') {
+      config.AUTO_CALL_REJECT = false;
+      await m.reply('Auto call reject is now disabled.');
+    } else {
+      await m.reply('Usage: /call on|off');
+    }
+    return;
+  }
+
+  // Function to handle incoming calls and auto-reject
+  gss.ev.on('call', async (call) => {
+    if (config.AUTO_CALL_REJECT) {
+      await gss.rejectCall(call.id); // Reject the call
+      const message = 'Sorry, I cannot take calls right now. Please send a message instead.';
+      await gss.sendMessage(call.from, { text: message });
+      console.log(`Rejected call from ${call.from}`);
+    }
+  });
 
   // Handle autosticker command
   if (cmd === 'autosticker') {
