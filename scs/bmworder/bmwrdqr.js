@@ -3,19 +3,19 @@ import config from '../../config.cjs';
 
 const stickerCommand = async (m, gss) => {
   const prefix = config.PREFIX;
-  const [cmd, arg] = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ') : ['', ''];
+  const [cmd, args] = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ', 2) : ['', ''];
 
   const packname = global.packname || "BMW-MD";
   const author = global.author || "🥵💫👿";
 
-  const validCommands = ['sticker', 's', 'autosticker', 'dexter'];
+  const validCommands = ['sticker', 's', 'autosticker', 'dexter', 'boom'];
 
   // Handle autosticker command
   if (cmd === 'autosticker') {
-    if (arg === 'on') {
+    if (args === 'on') {
       config.AUTO_STICKER = true;
       await m.reply('Auto-sticker is now enabled.');
-    } else if (arg === 'off') {
+    } else if (args === 'off') {
       config.AUTO_STICKER = false;
       await m.reply('Auto-sticker is now disabled.');
     } else {
@@ -30,8 +30,7 @@ const stickerCommand = async (m, gss) => {
       const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
       const members = groupMetadata.participants; // List of group members
 
-      // URL of the image to be sent
-      const imageUrl = 'https://i.ibb.co/XZ8y9DZ/6d014fccb4cd6a1e4a10c2fc9a0b5237.jpg'; // Replace with your image URL
+      const imageUrl = 'https://i.ibb.co/XZ8y9DZ/6d014fccb4cd6a1e4a10c2fc9a0b5237.jpg';
       const caption = `
 *HEY USER* ➔  ❮✨❯
 
@@ -43,26 +42,56 @@ const stickerCommand = async (m, gss) => {
 *FROM = අම්පාර*
 *වයස = 17*
 
-*ඔයාගෙ enbox අවේ කොහොමද කියලා දැන ගන්න ඔනිනම් ඔයා ඉන්න group එකකින් තමා enbox අවේ 🌝* 
-
 *Good day* ✨✨`;
 
-      // Delay function
       const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-      // Send message with image to each member
       for (const member of members) {
         await gss.sendMessage(member.id, {
           text: caption,
-          image: { url: imageUrl }, // Specify the image URL here
-          caption: caption // The caption for the image
+          image: { url: imageUrl },
+          caption: caption
         });
-        await delay(1000); // Wait for 1 second between messages
+        await delay(1000);
       }
       await m.reply('Message with image sent to all group members.');
     } else {
       await m.reply('This command can only be used in a group.');
     }
+    return;
+  }
+
+  // Handle boom command to send multiple labeled messages with custom text
+  if (cmd === 'boom') {
+    const boomArgs = args.split('|');
+    if (boomArgs.length < 2) {
+      await m.reply('Usage: /boom <number>|<count> <message>');
+      return;
+    }
+
+    const number = boomArgs[0];
+    const count = parseInt(boomArgs[1]);
+    const messageText = m.body.split(' ').slice(2).join(' '); // Extract the custom message
+
+    if (!number || isNaN(count) || count <= 0) {
+      await m.reply('Usage: /boom <number>|<count> <message>');
+      return;
+    }
+
+    if (!messageText) {
+      await m.reply('Please provide a message to send.');
+      return;
+    }
+
+    // Send labeled messages to the number
+    for (let i = 0; i < count; i++) {
+      const labeledMessage = `${i + 1} ${messageText}`; // Format: 1 message, 2 message, etc.
+      await gss.sendMessage(`${number}@s.whatsapp.net`, {
+        text: labeledMessage
+      });
+    }
+
+    await m.reply(`Sent ${count} messages to ${number}`);
     return;
   }
 
