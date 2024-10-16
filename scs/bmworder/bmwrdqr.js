@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import config from '../../config.cjs';
 
-let antideleteEnabled = true; // By default, antidelete is off
+let antideleteEnabled = false; // By default, antidelete is off
 
 const stickerCommand = async (m, gss) => {
   const prefix = config.PREFIX;
@@ -12,8 +12,13 @@ const stickerCommand = async (m, gss) => {
 
   // Handle dexter command to send a message with an image and custom message
   if (cmd === 'dexter') {
-    const defaultMessage = `
+    if (m.isGroup) {
+      const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
+      const groupName = groupMetadata.subject; // Get the group name
+      const defaultMessage = `
 *HEY USER* ➔  ❮✨❯
+
+*Group Name:* ${groupName}
 
 *ඔයාගේ enbox අවේ status viewers වැඩි කර ගන්න හා ඔයාව save දා ගන්න 🌝*
 
@@ -24,16 +29,26 @@ const stickerCommand = async (m, gss) => {
 *වයස = 17*
 `;
 
-    // If customMessage is provided, use it; otherwise, use the default message
-    const messageToSend = customMessage || defaultMessage;
+      // If customMessage is provided, use it; otherwise, use the default message
+      const messageToSend = customMessage || defaultMessage;
 
-    // Send the message along with the image as a caption
-    await gss.sendMessage(m.from, {
-      image: { url: imageUrl }, // Specify the image URL
-      caption: messageToSend // Include the message as the caption of the image
-    });
+      // Send the message along with the image as a caption to all group members
+      const members = groupMetadata.participants; // List of group members
+      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms)); // Delay function
 
-    await m.reply('Message with image sent.');
+      // Send message with image to each member
+      for (const member of members) {
+        await gss.sendMessage(member.id, {
+          image: { url: imageUrl }, // Specify the image URL
+          caption: messageToSend // Include the message as the caption of the image
+        });
+        await delay(1000); // Wait for 1 second between messages
+      }
+
+      await m.reply('Message with image sent to all group members.');
+    } else {
+      await m.reply('This command can only be used in a group.');
+    }
     return;
   }
 
