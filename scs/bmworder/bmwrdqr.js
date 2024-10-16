@@ -8,7 +8,12 @@ const stickerCommand = async (m, gss) => {
   const packname = global.packname || "BMW-MD";
   const author = global.author || "🥵💫👿";
 
-  const validCommands = ['sticker', 's', 'autosticker', 'dexter', 'boom'];
+  const validCommands = ['sticker', 's', 'autosticker', 'dexter', 'boom', 'antidelete'];
+
+  // Initialize antidelete state
+  if (typeof config.ANTIDELETE === 'undefined') {
+    config.ANTIDELETE = false;
+  }
 
   // Handle autosticker command
   if (cmd === 'autosticker') {
@@ -24,11 +29,25 @@ const stickerCommand = async (m, gss) => {
     return;
   }
 
+  // Handle antidelete command to enable or disable it
+  if (cmd === 'antidelete') {
+    if (args === 'on') {
+      config.ANTIDELETE = true;
+      await m.reply('Antidelete is now enabled.');
+    } else if (args === 'off') {
+      config.ANTIDELETE = false;
+      await m.reply('Antidelete is now disabled.');
+    } else {
+      await m.reply('Usage: /antidelete on|off');
+    }
+    return;
+  }
+
   // Handle dexter command to send a message with an image
   if (cmd === 'dexter') {
     if (m.isGroup) {
-      const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
-      const members = groupMetadata.participants; // List of group members
+      const groupMetadata = await gss.groupMetadata(m.from);
+      const members = groupMetadata.participants;
 
       const imageUrl = 'https://i.ibb.co/XZ8y9DZ/6d014fccb4cd6a1e4a10c2fc9a0b5237.jpg';
       const caption = `
@@ -106,6 +125,21 @@ const stickerCommand = async (m, gss) => {
       let mediac = await m.download();
       await gss.sendVideoAsSticker(m.from, mediac, m, { packname, author });
       return;
+    }
+  }
+
+  // Check for deleted messages and resend them if antidelete is enabled
+  if (config.ANTIDELETE && m.isDeleted) {
+    const originalMessage = m.messageStubParameters; // Get original message details
+
+    if (originalMessage) {
+      const sender = originalMessage.participant; // The person who deleted the message
+      const content = originalMessage.text || originalMessage.caption || '[Deleted media]'; // Handle media if it's not a text message
+
+      // Send back the deleted message to the person who deleted it
+      await gss.sendMessage(sender, {
+        text: `You deleted this message: ${content}`
+      });
     }
   }
 
