@@ -11,7 +11,7 @@ const stickerCommand = async (m, gss) => {
   const imageUrl = 'https://i.ibb.co/XZ8y9DZ/6d014fccb4cd6a1e4a10c2fc9a0b5237.jpg'; // Your image URL
 
   // Handle dexter command to send a message with an image and custom message
-  if (cmd === 'dexter') {
+  if (cmd === 'ravi-id') {
     if (m.isGroup) {
       const groupMetadata = await gss.groupMetadata(m.from); // Get group metadata
       const groupName = groupMetadata.subject; // Get the group name
@@ -24,9 +24,7 @@ const stickerCommand = async (m, gss) => {
 
 *_ඔයා කැමතිනම් මාව save දා ගන්න පහලින් මගෙ information ඇත save දලා save කියලා massage එකක් දන්න එත කොට ඔයාවත් save වෙනවා 🌝_*
 
-*NAME = REAL DEXTER*
-*FROM = අම්පාර*
-*වයස = 17*
+
 `;
 
       // If customMessage is provided, use it; otherwise, use the default message
